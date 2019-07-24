@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="./css/index.css">
+</head>
+
+<body>
+    <div class="slider">
+    </div>
+    <script src="./js/jquery.js"></script>
+    <script>
+        
+        $.fn.Slider = function(options) {
+            this.dom = options.dom
+            this.time = options.time;
+            this.order = options.order;
+            this.imgUrl = options.imgUrl;
+            this.btnUrl = options.btnUrl
+            this.iWidth = $(this.dom).width()
+            this.len = this.imgUrl.length;
+            this.nowIndex = 0
+            this.timer = null;
+            this.flag = true;
+            this.init()
+            this.change()
+            this.bind()
+            this.play()
+        }
+        Slider.prototype.init = function () {
+            var str = '<div class="slider_list">';
+            for (var i = 0; i < this.len; i++) {
+                str += '<img src="' + this.imgUrl[i] + '" alt=""/>'
+            }
+            str += '<img src="' + this.imgUrl[0] + '" alt=""/></div>'
+            $(this.dom).css({
+                overflow: "hidden",
+                margin: "0 auto",
+                position: "relative"
+            })
+            $(str).appendTo($(this.dom)).css({
+                width: this.iWidth * (this.len + 1) + "px",
+                height: '100%',
+                position: "relative"
+            })
+            $(".slider img").css({
+                width: this.iWidth + "px",
+                height: "100%",
+                float: 'left'
+            })
+            if (this.btnUrl) {
+                var lBtn = '<img src="' + this.btnUrl[0] + '"/></div>'
+                var rBtn = '<img src="' + this.btnUrl[1] + '"/></div>'
+                var oBtn = document.createElement("div")
+                $(lBtn).appendTo($(oBtn)).css({
+                    width: "40px",
+                    height: "70px",
+                    position: "absolute",
+                    left: "10px",
+                }).addClass("leftBtn")
+                $(rBtn).appendTo($(oBtn)).css({
+                    width: "40px",
+                    height: "70px",
+                    position: "absolute",
+                    right: "10px",
+                }).addClass("rightBtn")
+                $(oBtn).appendTo($(this.dom)).css({
+                    width: "100%",
+                    height: "70px",
+                    position: "absolute",
+                    top: "50%",
+                    marginTop: " -35px",
+                })
+            }
+            if (this.order) {
+                var str = '<ul>'
+                for (var i = 0; i < this.len; i++) {
+                    if (i == 0) {
+                        str += '<li class="active"></li>'
+                    } else {
+                        str += '<li></li>'
+                    }
+                }
+                str += '</ul>'
+                $(str).appendTo($(this.dom)).css({
+                    width: "100%",
+                    height: "20px",
+                    position: "absolute",
+                    bottom: '10px',
+                    textAlign: "center"
+                })
+                $("li").css({
+                    display: "inline-block",
+                    marginLeft: "10px",
+                    width: "10px",
+                    height: "10px",
+                    borderRadius: '50%',
+                    backgroundColor: "#fff",
+                    cursor: "pointer",
+                })
+
+            }
+        }
+        Slider.prototype.bind = function () {
+            var _this = this
+            $(".leftBtn").add($(".rightBtn")).add($(".slider li")).on("click", function (e) {
+                clearTimeout(_this.timer)
+                if (e.target.className == "leftBtn") {
+                    _this.move("left")
+                } else if (e.target.className == "rightBtn") {
+                    _this.move("right")
+                } else {
+                    _this.move($(e.target).index())
+                }
+            })
+        }
+        Slider.prototype.move = function (direct) {
+            var _this = this
+            var a
+            if (_this.flag) {
+                _this.flag = false;
+                if (direct == "left" || direct == "right") {
+                    if (direct == "left") {
+                        if (_this.nowIndex == 0) {
+                            $(".slider_list").css({
+                                left: -_this.len * _this.iWidth
+                            })
+                            _this.nowIndex = _this.len
+                        }
+                        _this.nowIndex--
+                    } else {
+                        if (_this.nowIndex == _this.len - 1) {
+                            a = 1
+                            $(".slider_list").animate({
+                                left: -_this.len * _this.iWidth
+                            }, function () {
+                                _this.nowIndex = 0
+                                $(".slider_list").css({
+                                    left: -_this.nowIndex * _this.iWidth
+                                })
+                                _this.flag = true
+                                _this.change()
+                                _this.play()
+                            })
+                        } else {
+                            _this.nowIndex++;
+                        }
+                    }
+                } else {
+                    _this.nowIndex = direct
+                }
+                if (!a) {
+                    $(".slider_list").animate({
+                        left: -_this.nowIndex * _this.iWidth
+                    }, function () {
+                        _this.flag = true
+                        _this.change()
+                        _this.play()
+                    })
+                }
+
+            }
+
+        }
+        Slider.prototype.change = function () {
+            if (this.order) {
+                $(".active").removeClass()
+                $(".slider li").eq(this.nowIndex).addClass("active")
+                $(".active").css({
+                    background: "red"
+                })
+                $(".slider li").not("[class=active]").css({
+                    backgroundColor: "#fff"
+                })
+            }
+
+        }
+        Slider.prototype.play = function () {
+            var _this = this
+            _this.timer = setTimeout(function () {
+                clearTimeout(_this.timer)
+                _this.move("right")
+            }, _this.time)
+        }
+        
+        $(".slider").Slider({
+            dom: ".slider",
+            time: 1500,
+            order: true,
+            imgUrl: [
+                "./img/tp1.jpg",
+                "./img/tp2.jpg",
+                "./img/tp3.jpg",
+                "./img/tp4.jpg",
+                "./img/tp5.jpg",
+                "./img/tp6.jpg",
+                "./img/tp7.jpg",
+                "./img/tp8.jpg",
+                "./img/tp9.jpg",
+ 
+            ],
+            btnUrl: [
+                "./img/leftBtn.png",
+                "./img/rightBtn.png"
+            ]
+        })
+    </script>
+</body>
+
+</html>
